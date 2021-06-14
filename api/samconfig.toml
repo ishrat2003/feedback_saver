@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "feedbacksaver"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-10gy3nwspb0dd"
+s3_prefix = "feedbacksaver"
+region = "eu-west-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "ENVIRONMENT_NAME=\"production\" DYNAMODB_ENDPOINT=\"https://dynamodb.eu-west-1.amazonaws.com\" DEFAULT_DYNAMODB_ENDPOINT=\"http://host.docker.internal:8000\" S3_ENDPOINT=\"http://host.docker.internal:4566\" REGION=\"eu-west-1\" TIMEOUT=\"3600\""

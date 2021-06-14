@@ -1,0 +1,5 @@
+.aws-sam/*
+url.txt
+upload/*
+api/samconfig.toml
+api/production-package.yaml

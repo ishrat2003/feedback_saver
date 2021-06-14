@@ -1,0 +1,131 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  feedbacksaverapi
+
+  Sample SAM Template for eedback-saver-api
+
+Parameters:
+  ENVIRONMENT_NAME:
+    Description: Environment name
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "local"
+  
+  DYNAMODB_ENDPOINT:
+    Description: DynamoDb endpoint
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "https://dynamodb.eu-west-1.amazonaws.com" 
+    
+  DEFAULT_DYNAMODB_ENDPOINT:
+    Description: DynamoDb endpoint
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "http://host.docker.internal:8000"
+    
+  S3_ENDPOINT:
+    Description: S3 endpoint
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "http://host.docker.internal:4566"
+
+  REGION:
+    Description: Region
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "eu-west-1"
+
+  TIMEOUT:
+    Description: Timeout
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: 3600
+
+# More info about Globals: 
+Globals:
+  Function:
+    # Properties of AWS::Serverless::Function
+    Timeout: 3600
+    Environment:
+      Variables:
+        API_NAME: feedbacksaverapi
+        ENVIRONMENT_NAME: local
+        DYNAMODB_ENDPOINT: !Ref DYNAMODB_ENDPOINT
+        DEFAULT_DYNAMODB_ENDPOINT: !Ref DEFAULT_DYNAMODB_ENDPOINT
+        S3_ENDPOINT: !Ref S3_ENDPOINT
+        REGION: !Ref REGION
+        TIMEOUT: !Ref TIMEOUT
+  Api:
+    # Properties of AWS::Serverless::Api
+    Cors:
+      AllowMethods: "'*'"
+      AllowHeaders: "'*'"
+      AllowOrigin: "'*'"
+    
+Resources:
+  StoryTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 
+        REF: story
+      AttributeDefinitions:
+        - AttributeName: story_link
+          AttributeType: S
+        - AttributeName: user_code
+          AttributeType: S
+      KeySchema:
+        - AttributeName: story_link
+          KeyType: "HASH"
+        - AttributeName: user_code
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
+  TermsboardTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 
+        REF: termsboard
+      AttributeDefinitions:
+        - AttributeName: story_term
+          AttributeType: S
+        - AttributeName: user_code
+          AttributeType: S
+      KeySchema:
+        - AttributeName: story_term
+          KeyType: "HASH"
+        - AttributeName: user_code
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
+  FeedbackFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: feedback/
+      Handler: app.save_handler
+      Runtime: python3.8
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: 
+              REF: story
+        - DynamoDBCrudPolicy:
+            TableName: 
+              REF: termsboard
+      Events:
+        feedback:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /feedback
+            Method: post
+            
+
+Outputs:
+  FeedbackApi:
+    Description: "API Gateway endpoint URL for Prod stage for  Feedback function"
+    Value: "https://api.execute-api.eu-west-1.amazonaws.com/feedback/"
+  FeedbackFunction:
+    Description: "Feedback Lambda Function ARN"
+    Value:
+      GETATT: FeedbackFunction.Arn
+  FeedbackIamRole:
+    Description: "Implicit IAM Role created for Feedback function"
+    Value:
+      GETATT: FeedbackIamRole.IamRoleArn

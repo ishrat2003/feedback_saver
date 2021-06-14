@@ -1,0 +1,27 @@
+{
+    "TableName": "story",
+    "AttributeDefinitions": [
+        {
+            "AttributeName": "story_link",
+            "AttributeType": "S"
+        },
+        {
+            "AttributeName": "user_code",
+            "AttributeType": "S"
+        }
+    ],
+    "KeySchema": [
+        {
+            "AttributeName": "story_link",
+            "KeyType": "HASH"
+        },
+        { 
+            "AttributeName": "user_code",
+            "KeyType": "RANGE"
+        }
+    ],
+    "ProvisionedThroughput": {
+        "ReadCapacityUnits": 5,
+        "WriteCapacityUnits": 5
+    }
+}
